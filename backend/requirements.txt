@@ -1,0 +1,23 @@
+# =============================================================================
+# Requirements for HCP CRM AI Backend
+# Install with: pip install -r requirements.txt
+# =============================================================================
+
+# Core Flask framework
+Flask>=3.1.1
+Flask-CORS>=6.0.5
+Flask-SQLAlchemy>=3.1.1
+
+# Database ORM and PostgreSQL driver
+SQLAlchemy>=2.0.16
+psycopg2-binary>=2.9.9
+
+# LangChain + LangGraph for the AI agent
+langchain>=1.0.0
+langchain-core>=1.0.0
+langchain-groq>=1.0.0
+langgraph>=1.0.0
+
+# Utilities
+python-dotenv>=1.0.0
+pydantic>=2.5.3
