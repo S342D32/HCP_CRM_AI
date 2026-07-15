@@ -289,12 +289,22 @@ class SafeToolExecutor:
         last_message = messages[-1]
         
         tool_messages = []
-        
+        logged_this_call = False  # guards against duplicate log_interaction in one turn
+
         if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
             for tc in last_message.tool_calls:
                 tool_name = tc['name']
                 tool_call_id = tc['id']
-                
+                if tool_name == 'log_interaction' and logged_this_call:
+                    tool_messages.append(ToolMessage(
+                        content=json.dumps({
+                            "success": False,
+                            "error": "log_interaction already called this turn; skipped duplicate."
+                        }),
+                        name=tool_name,
+                        tool_call_id=tool_call_id
+                    ))
+                    continue
                 # Normalize the parameters
                 raw_args = tc.get('args', {})
                 normalized_args = self.normalize_params(tool_name, raw_args)
@@ -313,6 +323,8 @@ class SafeToolExecutor:
                     tool = self.tools_by_name[tool_name]
                     try:
                         result = tool.invoke(normalized_args)
+                        if tool_name == 'log_interaction':
+                            logged_this_call = True
                         tool_messages.append(ToolMessage(
                             content=str(result),
                             name=tool_name,

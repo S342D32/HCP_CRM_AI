@@ -11,6 +11,7 @@ from langchain_core.messages import HumanMessage, AIMessage, SystemMessage, Tool
 from langgraph.graph import StateGraph, END
 from typing import TypedDict, Annotated, List
 import operator
+from groq import BadRequestError
 
 # Import tools
 from .tools import ALL_TOOLS
@@ -108,7 +109,26 @@ class HCPAgent:
 
     def _agent_node(self, state: AgentState):
         messages = state["messages"]
-        response = self.llm.invoke(messages)
+        try:
+            response = self.llm.invoke(messages)
+        except BadRequestError as e:
+            # Groq rejected the tool call before it reached our code (bad arg types, etc).
+            # Feed the error back to the model and ask it to retry with correct types.
+            correction = HumanMessage(content=(
+                "Your last tool call was rejected because one or more parameters had the "
+                "wrong type (for example, products_discussed must be a JSON array like "
+                '["Product A", "Product B"], not a string). Please retry the same tool call '
+                "with corrected types. Do not apologize or explain — just call the tool again."
+            ))
+            retry_messages = messages + [correction]
+            try:
+                response = self.llm.invoke(retry_messages)
+            except BadRequestError:
+                # Give up gracefully instead of surfacing a raw 400 to the user.
+                response = AIMessage(content=(
+                    "I had trouble logging that — could you rephrase the products discussed "
+                    "as a simple comma-separated list (e.g. 'Halio, Jasio')?"
+                ))
         return {"messages": [response]}
 
     # ★ Custom tools node that uses SafeToolExecutor ★

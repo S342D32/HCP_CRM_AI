@@ -19,7 +19,7 @@ Each tool is decorated with @tool from LangChain and includes:
 """
 
 from datetime import datetime
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any,Union
 from langchain_core.tools import tool
 from langchain_groq import ChatGroq
 import json
@@ -69,7 +69,7 @@ def log_interaction(
     date: Optional[str] = None,
     summary: Optional[str] = "",
     key_discussions: Optional[str] = "",
-    products_discussed: Optional[List[str]] = None,
+    products_discussed: Optional[Union[List[str], str]] = None,  # <-- was List[str]
     hcp_sentiment: Optional[str] = None,
     specialty: Optional[str] = None,
     hospital_name: Optional[str] = None,
