@@ -173,14 +173,22 @@ body {
     letter-spacing: 0.5px;
 }
 
-/* Left panel — Form, takes 1 part (25%) — scrollable */
+/* Left panel — Form, takes 1 part (25%)
+   Keep overall panel layout fixed; inner scroll (form content) is controlled below. */
 .panel-form {
     flex: 3;                        /* 1 out of 4 = 25% width */
-    overflow-y: auto;               /* form scrolls freely */
+    overflow: hidden;             /* prevent independent panel scroll */
     background: white;
     min-width: 0;
     border-right: 1px solid var(--gray-200);
 }
+
+/* Let the form card content scroll inside the left panel */
+.panel-form .form-container {
+    height: 100%;
+    overflow-y: auto;
+}
+
 
 /* Thin vertical divider between the two panels */
 .panel-divider {
@@ -638,9 +646,28 @@ body {
 
 .form-grid {
     display: grid;
-    grid-template-columns: 1fr;  /* single column — panel is narrow (25%) */
+    grid-template-columns: 1fr 1fr; /* small fields side-by-side */
     gap: 12px;
 }
+
+/* Force textarea/full-width fields to span both columns */
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+/* textarea/full-width fields should occupy both columns */
+.form-group textarea,
+.form-group .checkbox-group {
+    width: 100%;
+}
+
+
+.form-group:has(textarea),
+.form-group:has(.checkbox-group),
+.form-group.full-width {
+    /* keep consistent spacing; actual spanning handled above */
+}
+
 
 .form-group {
     display: flex;
